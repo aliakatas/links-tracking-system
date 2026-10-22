@@ -1,0 +1,22 @@
+[project]
+name = "links-tracking-system"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Aristotelis Liakatas", email = "aristotelis.liakatas@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi>=0.161.0",
+    "pydantic-settings>=2.16.1",
+    "sqlmodel>=0.0.48",
+    "uvicorn>=0.54.0",
+]
+
+[project.scripts]
+links-tracking-system = "links_tracking_system:main"
+
+[build-system]
+requires = ["uv_build>=0.13.1,<0.14.0"]
+build-backend = "uv_build"
