@@ -7,7 +7,7 @@ A small FastAPI + SQLModel service backed by Postgres for tracking links.
 - `POST /urls` creates a URL record (`source_key`, `name`, `tags`); duplicate `source_key` returns 409.
 - `GET /version` returns the package version (no DB access).
 - `GET /health` checks database connectivity (503 if unreachable).
-- Not yet implemented: schema migrations or table creation, and read/update/delete endpoints.
+- Not yet implemented: table creation and read/update/delete endpoints.
 
 ## Setup
 
