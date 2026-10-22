@@ -9,7 +9,7 @@ from links_tracking_system.db.session import get_engine
 
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     yield
     # Only dispose an engine that was actually created; don't build one here.
     if get_engine.cache_info().currsize:
