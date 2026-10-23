@@ -57,6 +57,9 @@ input, button {
 }
 button { cursor: pointer; }
 button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+@media (prefers-color-scheme: dark) {
+  button.primary { color: var(--bg); }
+}
 button.danger { color: var(--danger); border-color: var(--danger); }
 button:disabled { opacity: 0.5; cursor: default; }
 
