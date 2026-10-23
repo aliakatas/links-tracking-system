@@ -7,12 +7,14 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <nav id="nav"></nav>
   <main>
     <h1>Links Tracking System</h1>
     <p id="status" class="status">Checking backend…</p>
   </main>
   <script type="module">
-    import { api, setStatus } from "./app.js";
+    import { api, renderNav, setStatus } from "./app.js";
+    renderNav(document.getElementById("nav"), "index.html");
     const status = document.getElementById("status");
     api("/health")
       .then(() => setStatus(status, "Backend reachable.", "ok"))

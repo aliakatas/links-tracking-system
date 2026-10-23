@@ -22,3 +22,20 @@ export function setStatus(element, message, kind = "") {
   element.textContent = message;
   element.className = `status ${kind}`;
 }
+
+const PAGES = [
+  ["index.html", "Browse"],
+  ["add.html", "Add"],
+];
+
+// Fills the <nav> element and marks the current page.
+export function renderNav(nav, current) {
+  nav.innerHTML = "<strong>Links Tracker</strong>";
+  for (const [href, label] of PAGES) {
+    const link = document.createElement("a");
+    link.href = href;
+    link.textContent = label;
+    if (href === current) link.setAttribute("aria-current", "page");
+    nav.append(link);
+  }
+}
