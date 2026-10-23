@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Links Tracking System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>Links Tracking System</h1>
+    <p id="status" class="status">Checking backend…</p>
+  </main>
+  <script type="module">
+    import { api, setStatus } from "./app.js";
+    const status = document.getElementById("status");
+    api("/health")
+      .then(() => setStatus(status, "Backend reachable.", "ok"))
+      .catch((e) => setStatus(status, `Backend unavailable: ${e.message}`, "error"));
+  </script>
+</body>
+</html>
