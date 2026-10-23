@@ -54,7 +54,10 @@ services:
       migrate:
         condition: service_completed_successfully
 
-  frontend:
+  # Name is unique on purpose: this service also joins the shared "proxy"
+  # network, where Traefik reaches it at http://links-frontend:8080.
+  links-frontend:
+    container_name: links-frontend
     build:
       context: frontend
       dockerfile: Containerfile
