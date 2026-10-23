@@ -1,3 +1,7 @@
+networks:
+  proxy:
+    external: true
+
 services:
   db:
     image: docker.io/postgres:18
@@ -50,7 +54,10 @@ services:
       migrate:
         condition: service_completed_successfully
 
-  frontend:
+  # Name is unique on purpose: this service also joins the shared "proxy"
+  # network, where Traefik reaches it at http://links-frontend:8080.
+  links-frontend:
+    container_name: links-frontend
     build:
       context: frontend
       dockerfile: Containerfile
@@ -58,7 +65,10 @@ services:
     environment:
       # Where nginx forwards /api/*. Point this at any reachable backend.
       API_URL: ${API_URL:-http://api:8000}
-    ports: ["127.0.0.1:${FRONTEND_PORT:-3000}:8080"]
+    # ports: ["127.0.0.1:${FRONTEND_PORT:-3000}:8080"]
+    networks:
+      - default   # needed to reach `api`
+      - proxy     # needed for Traefik to reach the frontend
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
       interval: 10s
