@@ -1,6 +1,6 @@
 # Links Tracking System
 
-A small FastAPI + SQLModel service backed by Postgres for tracking links.
+A small FastAPI + SQLModel service backed by Postgres for tracking links, with a lightweight web frontend.
 
 ## Current state
 
@@ -12,6 +12,23 @@ A small FastAPI + SQLModel service backed by Postgres for tracking links.
 - `GET /urls/{url_id}` returns a URL record (404 if not found).
 - `PATCH /urls/{url_id}` partially updates a URL record; only the fields sent are changed (404 if not found, 409 on duplicate `source_key`).
 - `DELETE /urls/{url_id}` deletes a URL record and returns 204 (404 if not found).
+
+## Frontend
+
+A static site (plain HTML + JavaScript, no build step) served by nginx from `frontend/`:
+
+- **Browse** (`/`): paginated table of all URLs.
+- **Add** (`/add.html`): form to create a URL (`source_key`, `name`, comma-separated tags).
+- **Search** (`/search.html`): search by key, name or tag, with a delete button per result.
+
+The browser only talks to the frontend's own origin. nginx forwards `/api/*` to the backend at **`API_URL`**, read when the container starts, so the same image works against any backend and needs no CORS setup:
+
+```sh
+podman build -t links-frontend -f frontend/Containerfile frontend
+podman run --rm -p 3000:8080 -e API_URL=https://api.example.com links-frontend
+```
+
+`API_URL` must be reachable from the frontend container and has no trailing slash. Under compose it defaults to `http://api:8000`; override it in `.env` to point at a backend running elsewhere (you can then run only the frontend with `podman compose up --build frontend --no-deps`).
 
 ## Setup
 
@@ -39,7 +56,7 @@ podman compose up --build
 
 The `migrate` service runs `alembic upgrade head` and exits; the API starts only after it succeeds.
 
-The API listens on <http://127.0.0.1:8000>. Interactive docs are at `/docs`.
+The API listens on <http://127.0.0.1:8000> (interactive docs at `/docs`) and the frontend on <http://127.0.0.1:3000> (`FRONTEND_PORT`).
 
 ## Migrations
 
@@ -55,6 +72,7 @@ In compose, pending revisions are applied automatically on startup by the `migra
 ## Debug
 
 - Check the API and DB are up: `curl localhost:8000/health`
-- Container logs: `podman compose logs -f api db`
+- Container logs: `podman compose logs -f api db frontend`
+- Check the frontend can reach the API: `curl localhost:3000/api/health`
 - Debugger: launch `uvicorn links_tracking_system.main:app` (without `--reload`) from your IDE's Python debug configuration.
 - Reset local data: `podman compose down` and delete `.pgdata/`.
