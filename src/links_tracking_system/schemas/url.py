@@ -18,3 +18,10 @@ class URLResponse(BaseModel):
     source_key: str
     name: str
     tags: list[str] | None
+
+
+class URLListResponse(BaseModel):
+    items: list[URLResponse]
+    total: int
+    limit: int
+    offset: int
