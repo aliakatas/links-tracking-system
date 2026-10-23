@@ -8,7 +8,9 @@ A small FastAPI + SQLModel service backed by Postgres for tracking links.
 - `GET /version` returns the package version (no DB access).
 - `GET /health` checks database connectivity (503 if unreachable).
 - `GET /meta/migrations` reports the database's Alembic revision against head (503 if the DB is unreachable).
-- Not yet implemented: read/update/delete endpoints.
+- `GET /urls/{url_id}` returns a URL record (404 if not found).
+- `PATCH /urls/{url_id}` partially updates a URL record; only the fields sent are changed (404 if not found, 409 on duplicate `source_key`).
+- `DELETE /urls/{url_id}` deletes a URL record and returns 204 (404 if not found).
 
 ## Setup
 
