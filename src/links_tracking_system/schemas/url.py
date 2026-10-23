@@ -7,6 +7,12 @@ class URLCreate(BaseModel):
     tags: list[str] = Field(default_factory=list)
 
 
+class URLUpdate(BaseModel):
+    source_key: str | None = Field(default=None, min_length=1)
+    name: str | None = Field(default=None, min_length=1)
+    tags: list[str] | None = None
+
+
 class URLResponse(BaseModel):
     id: int
     source_key: str
