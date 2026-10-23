@@ -1,0 +1,15 @@
+# Build from the frontend directory: podman build -f Containerfile .
+# Static files served by nginx; no build step.
+
+FROM docker.io/nginxinc/nginx-unprivileged:alpine
+
+# Rendered with envsubst at container start, so the backend location is
+# runtime configuration (API_URL), not baked into the image.
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY public /usr/share/nginx/html
+
+# Opt in to the image filling NGINX_LOCAL_RESOLVERS from /etc/resolv.conf.
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1 \
+    API_URL=http://api:8000
+
+EXPOSE 8080

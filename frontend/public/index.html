@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Browse · Links Tracking System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav id="nav"></nav>
+  <main>
+    <h1>All URLs</h1>
+    <div id="list"></div>
+  </main>
+  <script type="module">
+    import { mountList, renderNav } from "./app.js";
+    renderNav(document.getElementById("nav"), "index.html");
+    mountList(document.getElementById("list"));
+  </script>
+</body>
+</html>

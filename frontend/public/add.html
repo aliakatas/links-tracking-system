@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Add URL · Links Tracking System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav id="nav"></nav>
+  <main>
+    <h1>Add a URL</h1>
+    <form id="form" class="card">
+      <label>Source key
+        <input name="source_key" required>
+        <small>Unique identifier for this link.</small>
+      </label>
+      <label>Name
+        <input name="name" required>
+      </label>
+      <label>Tags
+        <input name="tags" placeholder="docs, internal">
+        <small>Comma-separated, optional.</small>
+      </label>
+      <button class="primary">Add URL</button>
+    </form>
+    <p id="status" class="status" role="status"></p>
+  </main>
+  <script type="module">
+    import { api, renderNav, setStatus } from "./app.js";
+    renderNav(document.getElementById("nav"), "add.html");
+
+    const form = document.getElementById("form");
+    const status = document.getElementById("status");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const data = new FormData(form);
+      const payload = {
+        source_key: data.get("source_key").trim(),
+        name: data.get("name").trim(),
+        tags: data.get("tags").split(",").map((t) => t.trim()).filter(Boolean),
+      };
+      try {
+        const created = await api("/urls", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        setStatus(status, `Added "${created.name}" (id ${created.id}).`, "ok");
+        form.reset();
+      } catch (error) {
+        setStatus(status, error.message, "error");
+      }
+    });
+  </script>
+</body>
+</html>

@@ -49,3 +49,21 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Containerfile
+    restart: unless-stopped
+    environment:
+      # Where nginx forwards /api/*. Point this at any reachable backend.
+      API_URL: ${API_URL:-http://api:8000}
+    ports: ["127.0.0.1:${FRONTEND_PORT:-3000}:8080"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    depends_on:
+      api:
+        condition: service_healthy
