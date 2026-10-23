@@ -28,7 +28,7 @@ podman build -t links-frontend -f frontend/Containerfile frontend
 podman run --rm -p 3000:8080 -e API_URL=https://api.example.com links-frontend
 ```
 
-`API_URL` must be reachable from the frontend container and has no trailing slash. Under compose it defaults to `http://api:8000`; override it in `.env` to point at a backend running elsewhere (you can then run only the frontend with `podman compose up --build frontend --no-deps`).
+`API_URL` must be reachable from the frontend container, with no trailing slash or path. The hostname is re-resolved on every request, so a restarted or moved backend is picked up without restarting the frontend. Under compose it defaults to `http://api:8000`; override it in `.env` to point at a backend running elsewhere (you can then run only the frontend with `podman compose up --build frontend --no-deps`).
 
 ## Setup
 
