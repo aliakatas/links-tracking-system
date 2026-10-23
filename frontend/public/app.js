@@ -72,12 +72,15 @@ export function mountList(root, { searchable = false, deletable = false } = {}) 
 
   let query = "";
   let offset = 0;
+  let loadVersion = 0;
 
   async function load() {
+    const version = ++loadVersion;
     const params = new URLSearchParams({ limit: PAGE_SIZE, offset });
     if (query) params.set("q", query);
     try {
       const page = await api(`/urls?${params}`);
+      if (version !== loadVersion) return;
       // The last row of the last page may have just been deleted.
       if (page.items.length === 0 && offset > 0) {
         offset = Math.max(0, offset - PAGE_SIZE);
@@ -86,6 +89,7 @@ export function mountList(root, { searchable = false, deletable = false } = {}) 
       setStatus(status, page.total === 0 ? "No URLs found." : "");
       render(page);
     } catch (error) {
+      if (version !== loadVersion) return;
       setStatus(status, error.message, "error");
     }
   }
