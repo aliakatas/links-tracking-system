@@ -3,22 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Links Tracking System</title>
+  <title>Browse · Links Tracking System</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <nav id="nav"></nav>
   <main>
-    <h1>Links Tracking System</h1>
-    <p id="status" class="status">Checking backend…</p>
+    <h1>All URLs</h1>
+    <div id="list"></div>
   </main>
   <script type="module">
-    import { api, renderNav, setStatus } from "./app.js";
+    import { mountList, renderNav } from "./app.js";
     renderNav(document.getElementById("nav"), "index.html");
-    const status = document.getElementById("status");
-    api("/health")
-      .then(() => setStatus(status, "Backend reachable.", "ok"))
-      .catch((e) => setStatus(status, `Backend unavailable: ${e.message}`, "error"));
+    mountList(document.getElementById("list"));
   </script>
 </body>
 </html>
