@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import Engine, Text, cast, func, or_
+from sqlalchemy import Engine, exists, func, literal, or_
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
@@ -51,11 +51,19 @@ def list_urls(
 ) -> URLListResponse:
     query = select(URL)
     if q:
+        # Match against each decoded tag, not the serialized JSON text. A NULL
+        # tags value yields no elements, so it simply doesn't match.
+        tags = func.jsonb_array_elements_text(URL.tags).table_valued("value")
+        tag_matches = exists(
+            select(literal(1))
+            .select_from(tags)
+            .where(tags.c.value.icontains(q, autoescape=True))
+        )
         query = query.where(
             or_(
                 URL.source_key.icontains(q, autoescape=True),
                 URL.name.icontains(q, autoescape=True),
-                cast(URL.tags, Text).icontains(q, autoescape=True),
+                tag_matches,
             )
         )
     with Session(engine) as session:
