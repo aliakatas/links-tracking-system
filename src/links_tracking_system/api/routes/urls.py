@@ -1,7 +1,8 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import Engine, Text, cast, func, or_
+from sqlalchemy import Engine, cast, func, or_
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
@@ -51,11 +52,25 @@ def list_urls(
 ) -> URLListResponse:
     query = select(URL)
     if q:
+        tag_elements = (
+            func.jsonb_array_elements_text(
+                func.coalesce(URL.tags, cast("[]", JSONB))
+            )
+            .table_valued("tag")
+            .alias("tag_elements")
+        )
+        matching_tag = (
+            select(1)
+            .select_from(tag_elements)
+            .where(tag_elements.c.tag.icontains(q, autoescape=True))
+            .correlate(URL)
+            .exists()
+        )
         query = query.where(
             or_(
                 URL.source_key.icontains(q, autoescape=True),
                 URL.name.icontains(q, autoescape=True),
-                cast(URL.tags, Text).icontains(q, autoescape=True),
+                matching_tag,
             )
         )
     with Session(engine) as session:
