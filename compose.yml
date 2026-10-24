@@ -40,6 +40,16 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     ports: ["127.0.0.1:${API_PORT:-8000}:8000"]
+    # Also joins "proxy" so the frontend (which sits on both networks) gets a
+    # DNS answer from either network's resolver. Otherwise nginx, which spreads
+    # lookups across both, intermittently gets NXDOMAIN for the name and
+    # returns 502. The alias is unique because "proxy" is shared with other
+    # projects.
+    networks:
+      default:
+        aliases: [links-api]
+      proxy:
+        aliases: [links-api]
     # Liveness only: /version doesn't touch the database, so a DB outage
     # doesn't mark the API container unhealthy. (Defined here rather than in
     # the Containerfile because Podman's default OCI image format drops it.)
@@ -65,7 +75,7 @@ services:
     restart: unless-stopped
     environment:
       # Where nginx forwards /api/*. Point this at any reachable backend.
-      API_URL: ${API_URL:-http://api:8000}
+      API_URL: ${API_URL:-http://links-api:8000}
     # ports: ["127.0.0.1:${FRONTEND_PORT:-3000}:8080"]
     networks:
       - default   # needed to reach `api`
