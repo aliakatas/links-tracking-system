@@ -27,7 +27,7 @@ services:
     command: ["alembic", "upgrade", "head"]
     restart: "no"
     environment:
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT:-5432}/${POSTGRES_DB}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     depends_on:
       db:
         condition: service_healthy
@@ -38,7 +38,7 @@ services:
       dockerfile: containers/Containerfile
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT:-5432}/${POSTGRES_DB}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     ports: ["127.0.0.1:${API_PORT:-8000}:8000"]
     # Liveness only: /version doesn't touch the database, so a DB outage
     # doesn't mark the API container unhealthy. (Defined here rather than in
