@@ -19,7 +19,7 @@ A static site (plain HTML + JavaScript, no build step) served by nginx from `fro
 
 - **Browse** (`/`): paginated table of all URLs.
 - **Add** (`/add.html`): form to create a URL (`source_key`, `name`, comma-separated tags).
-- **Search** (`/search.html`): search by key, name or tag, with a delete button per result.
+- **Search** (`/search.html`): search by key, name or tag; edit each result's name and tags or delete it.
 
 The browser only talks to the frontend's own origin. nginx forwards `/api/*` to the backend at **`API_URL`**, read when the container starts, so the same image works against any backend and needs no CORS setup:
 

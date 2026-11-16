@@ -46,7 +46,11 @@ const PAGE_SIZE = 10;
 // Renders a paginated table of URLs into `root`.
 //   searchable: show a search box (filters via the API's `q` parameter)
 //   deletable:  show a delete button on each row
-export function mountList(root, { searchable = false, deletable = false } = {}) {
+//   editable:   allow editing the name and tags on each row
+export function mountList(
+  root,
+  { searchable = false, deletable = false, editable = false } = {},
+) {
   root.innerHTML = `
     ${searchable ? `<form class="inline" data-search>
       <input name="q" type="search" placeholder="Search by key, name or tag" aria-label="Search">
@@ -54,7 +58,7 @@ export function mountList(root, { searchable = false, deletable = false } = {}) 
     </form>` : ""}
     <p class="status" role="status"></p>
     <table>
-      <thead><tr><th>ID</th><th>Source key</th><th>Name</th><th>Tags</th>${deletable ? "<th></th>" : ""}</tr></thead>
+      <thead><tr><th>ID</th><th>Source key</th><th>Name</th><th>Tags</th>${editable || deletable ? "<th></th>" : ""}</tr></thead>
       <tbody></tbody>
     </table>
     <div class="pager">
@@ -80,7 +84,7 @@ export function mountList(root, { searchable = false, deletable = false } = {}) 
     if (query) params.set("q", query);
     try {
       const page = await api(`/urls?${params}`);
-      if (version !== loadVersion) return;
+      if (version !== loadVersion) return false;
       // The last row of the last page may have just been deleted.
       if (page.items.length === 0 && offset > 0) {
         offset = Math.max(0, offset - PAGE_SIZE);
@@ -88,9 +92,11 @@ export function mountList(root, { searchable = false, deletable = false } = {}) 
       }
       setStatus(status, page.total === 0 ? "No URLs found." : "");
       render(page);
+      return true;
     } catch (error) {
-      if (version !== loadVersion) return;
+      if (version !== loadVersion) return false;
       setStatus(status, error.message, "error");
+      return false;
     }
   }
 
@@ -104,23 +110,116 @@ export function mountList(root, { searchable = false, deletable = false } = {}) 
 
   function renderRow(item) {
     const row = document.createElement("tr");
-    for (const value of [item.id, item.source_key, item.name]) {
+    for (const value of [item.id, item.source_key]) {
       row.insertCell().textContent = value;
     }
-    const tags = row.insertCell();
-    for (const tag of item.tags ?? []) {
-      const chip = document.createElement("span");
-      chip.className = "tag";
-      chip.textContent = tag;
-      tags.append(chip);
+
+    const nameCell = row.insertCell();
+    const tagsCell = row.insertCell();
+    const actions = editable || deletable ? row.insertCell() : null;
+    let editing = false;
+    let saving = false;
+    let nameInput;
+    let tagsInput;
+
+    function renderFields() {
+      nameCell.replaceChildren();
+      tagsCell.replaceChildren();
+      if (editing) {
+        nameInput = document.createElement("input");
+        nameInput.className = "row-edit-input";
+        nameInput.setAttribute("aria-label", "Name");
+        nameInput.value = item.name;
+        nameInput.disabled = saving;
+        nameCell.append(nameInput);
+
+        tagsInput = document.createElement("input");
+        tagsInput.className = "row-edit-input";
+        tagsInput.setAttribute("aria-label", "Tags, comma-separated");
+        tagsInput.value = (item.tags ?? []).join(", ");
+        tagsInput.disabled = saving;
+        tagsCell.append(tagsInput);
+        return;
+      }
+
+      nameCell.textContent = item.name;
+      for (const tag of item.tags ?? []) {
+        const chip = document.createElement("span");
+        chip.className = "tag";
+        chip.textContent = tag;
+        tagsCell.append(chip);
+      }
     }
-    if (deletable) {
-      const button = document.createElement("button");
-      button.className = "danger";
-      button.textContent = "Delete";
-      button.addEventListener("click", () => remove(item));
-      row.insertCell().append(button);
+
+    function renderActions() {
+      if (!actions) return;
+      actions.className = "row-actions";
+      actions.replaceChildren();
+
+      if (editable) {
+        const button = document.createElement("button");
+        button.type = "button";
+        if (editing) {
+          button.className = "primary";
+          button.textContent = "Save";
+          button.disabled = saving;
+          button.addEventListener("click", save);
+        } else {
+          button.className = "edit";
+          button.textContent = "✎";
+          button.setAttribute("aria-label", "Edit name and tags");
+          button.title = "Edit name and tags";
+          button.addEventListener("click", () => {
+            editing = true;
+            renderFields();
+            renderActions();
+          });
+        }
+        actions.append(button);
+      }
+
+      if (deletable) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "danger";
+        button.textContent = "Delete";
+        button.disabled = saving;
+        button.addEventListener("click", () => remove(item));
+        actions.append(button);
+      }
     }
+
+    async function save() {
+      const name = nameInput.value.trim();
+      const tags = tagsInput.value.split(",").map((tag) => tag.trim()).filter(Boolean);
+      saving = true;
+      nameInput.disabled = true;
+      tagsInput.disabled = true;
+      renderActions();
+      try {
+        const updated = await api(`/urls/${item.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, tags }),
+        });
+        item.name = updated.name;
+        item.tags = updated.tags;
+        editing = false;
+        saving = false;
+        renderFields();
+        renderActions();
+        if (await load()) setStatus(status, `Saved "${item.name}".`, "ok");
+      } catch (error) {
+        saving = false;
+        nameInput.disabled = false;
+        tagsInput.disabled = false;
+        renderActions();
+        setStatus(status, error.message, "error");
+      }
+    }
+
+    renderFields();
+    renderActions();
     return row;
   }
 

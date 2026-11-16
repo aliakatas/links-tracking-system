@@ -15,7 +15,11 @@
   <script type="module">
     import { mountList, renderNav } from "./app.js";
     renderNav(document.getElementById("nav"), "search.html");
-    mountList(document.getElementById("list"), { searchable: true, deletable: true });
+    mountList(document.getElementById("list"), {
+      searchable: true,
+      deletable: true,
+      editable: true,
+    });
   </script>
 </body>
 </html>
