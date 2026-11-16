@@ -9,8 +9,8 @@ RequiresMountsFor=%t/containers
 Type=oneshot
 RemainAfterExit=true
 Environment=PODMAN_SYSTEMD_UNIT=%n
-EnvironmentFile=-%h/homelab/links-tracking-system/.env
-WorkingDirectory=%h/homelab/links-tracking-system
+EnvironmentFile=-%h/Github/links-tracking-system/.env
+WorkingDirectory=%h/Github/links-tracking-system
 ExecStartPre=/usr/bin/podman-compose pull
 ExecStart=/usr/bin/podman-compose up -d
 ExecStop=/usr/bin/podman-compose down
