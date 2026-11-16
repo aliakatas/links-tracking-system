@@ -56,7 +56,7 @@ podman compose up --build
 
 The `migrate` service runs `alembic upgrade head` and exits; the API starts only after it succeeds.
 
-The API listens on <http://127.0.0.1:8000> (interactive docs at `/docs`) and the frontend is reachable only over the external `proxy` network as `http://links-frontend:8080` (no host port is published; route to it from Traefik).
+The API listens on <http://127.0.0.1:8000> (interactive docs at `/docs`). The frontend is available locally at <http://127.0.0.1:18080> and over the external `proxy` network as `http://links-frontend:8080`.
 
 ## Migrations
 
@@ -73,6 +73,6 @@ In compose, pending revisions are applied automatically on startup by the `migra
 
 - Check the API and DB are up: `curl localhost:8000/health`
 - Container logs: `podman compose logs -f api db links-frontend`
-- Check the frontend can reach the API: `curl localhost:3000/api/health`
+- Check the frontend can reach the API: `curl localhost:18080/api/health`
 - Debugger: launch `uvicorn links_tracking_system.main:app` (without `--reload`) from your IDE's Python debug configuration.
 - Reset local data: `podman compose down` and delete `.pgdata/`.

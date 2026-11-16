@@ -77,6 +77,7 @@ services:
       # Where nginx forwards /api/*. Point this at any reachable backend.
       API_URL: ${API_URL:-http://links-api:8000}
     # ports: ["127.0.0.1:${FRONTEND_PORT:-3000}:8080"]
+    ports: ["127.0.0.1:18080:8080"]
     networks:
       - default   # needed to reach `api`
       - proxy     # needed for Traefik to reach the frontend
